@@ -1,0 +1,27 @@
+{
+  "name": "riotjs-stack",
+  "title": "RiotJS Stack",
+  "description": "RiotJS Application Stack loosely based on riotjs admin",
+  "version": "1.0.1",
+  "main": "dist/riot-stack.js",
+  "homepage": "http://riotjs-stack.github.com",
+  "author": { 
+    "name": "Anton Heryanto",
+    "email": "anton.heryanto@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/antonheryanto/riotjs-stack.git"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/jquery/jquery/blob/2.1.1/MIT-LICENSE.txt"
+    }
+  ],
+  "devDependencies": {
+    "jquery": "^2.1.1",
+    "riotjs": "git://github.com/muut/riotjs",
+    "shelljs": "~0.3.0"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "riotjs-stack",
+  "version": "0.1.0",
+  "authors": [
+    "Anton Heryanto <anton.heryanto@gmail.com>"
+  ],
+  "description": "riotjs application stack",
+  "main": "riot-stack.js",
+  "keywords": [
+    "riotjs",
+    "application",
+    "stack",
+    "jquery",
+    "mobile"
+  ],
+  "license": "MIT",
+  "homepage": "http://bitbucket/antonheryanto/riotjs-stack",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "jquery": "2.1.1",
+    "riotjs": "1.0.1"
+  }
+}

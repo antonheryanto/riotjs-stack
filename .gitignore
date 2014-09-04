@@ -1,0 +1,5 @@
+.hg
+.hgignore
+*.swp
+node_modules
+bower_components

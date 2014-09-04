@@ -1,4 +1,4 @@
-// authentication module
+
 function Auth(backend) {
   var self = riot.observable(this),
       item = null;

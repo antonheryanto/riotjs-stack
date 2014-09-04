@@ -1,7 +1,6 @@
 app(function(api) {
-  api.root.on('click tap', api.filter, function(e) {
-    e.preventDefault();
-    var href = this.getAttribute('href') || this.getAttribute('data-href');
+  api.root.on('click tap', api.route_filter, function(e) {
+    var href = this.getAttribute('data-href') || this.getAttribute('href');
     if (href) {
       riot.route(href);
     }

@@ -5,7 +5,7 @@
   "version": "1.0.1",
   "main": "dist/riot-stack.js",
   "homepage": "http://riotjs-stack.github.com",
-  "author": { 
+  "author": {
     "name": "Anton Heryanto",
     "email": "anton.heryanto@gmail.com"
   },
@@ -21,6 +21,7 @@
   ],
   "devDependencies": {
     "jquery": "^2.1.1",
+    "nprogress": "^0.1.6",
     "riotjs": "git://github.com/muut/riotjs",
     "shelljs": "~0.3.0"
   }

@@ -1,15 +1,15 @@
-// webservice backend
+// Fake backend to simulate a real thing
 function Backend(conf) {
 
   var self = this,
-    debug = conf.debug && typeof console != 'undefined',
-    url = conf.url | '/';
+    debug = conf.debug && typeof console != 'undefined';
+    uri = conf.uri || '/';
   
   // underlying implementation for `call` can change
   self.call = function(api, arg, data, fn, fnProgress) {
     
-    var promise = new Promise(fn);
-    url += api;
+    var promise = new Promise(fn),
+        url = uri + api;
 
     if (typeof arg === 'function') {
       fn = arg;
@@ -34,7 +34,10 @@ function Backend(conf) {
     if (debug) console.info("->", method, url, data);
 
     var fd = data ? new FormData(data) : undefined;
-    NProgress.start();
+    //start nprogress
+    if (window.NProgress) {
+      NProgress.start();
+    }
     //add secret token
     var xhr = new XMLHttpRequest();
     xhr.onload = function (e) {
@@ -48,7 +51,10 @@ function Backend(conf) {
       promise.always(r);
       promise[xhr.status == 200 ? 'done' : 'fail'](r);
       if (debug) console.info("<-", r);
-      NProgress.done();
+      //start nprogress
+      if (window.NProgress) {
+        NProgress.done();
+      }
     };
 
     xhr.onerror = function(e) {
@@ -57,7 +63,7 @@ function Backend(conf) {
     };
 
     fnProgress = fnProgress || function(e) {
-      if (e.lengthComputable) {
+      if (window.NProgress && e.lengthComputable) {
         NProgress.set(e.loaded / e.total);
       }
     };
@@ -70,6 +76,6 @@ function Backend(conf) {
 
     return promise;
   };
-
 }
+
 

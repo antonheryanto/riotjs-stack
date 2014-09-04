@@ -5,12 +5,10 @@ function App(conf) {
   var self = riot.observable(this),
       init = conf.init || 'auth';
   self.route_filter = conf.route_filter || '[href^="#!/"]';
-  self.name = conf.name;
-  self.root = conf.root;
+  self.root = conf.root || $('body');
   self.debug = conf.debug;
   self.backend = new Backend(conf);
 
-  /* user/{action} user/{id}/{action} ?q=*/
   self.load = function(path, fn) {
     
     if (!path) {
@@ -38,6 +36,7 @@ function App(conf) {
 
     self.trigger("before:load", path);
     self.one("load", fn);
+
     // route handler
     // check query string
     if (qs) {
@@ -53,7 +52,7 @@ function App(conf) {
       action = uri[2] || 'details';
     } 
 
-    module[action] ? module[action](arg) : module.trigger(action, arg);
+    return module[action] ? module[action](arg) : module.trigger(action, arg);
   };
 
   self.auth = new Auth(self.backend);
@@ -74,7 +73,7 @@ function App(conf) {
 }
 
 
-// authentication module
+
 function Auth(backend) {
   var self = riot.observable(this),
       item = null;
@@ -125,17 +124,18 @@ function Auth(backend) {
 }
 
 
-// webservice backend
+// Fake backend to simulate a real thing
 function Backend(conf) {
 
   var self = this,
     debug = conf.debug && typeof console != 'undefined';
+    uri = conf.uri || '/';
   
   // underlying implementation for `call` can change
   self.call = function(api, arg, data, fn, fnProgress) {
     
     var promise = new Promise(fn),
-        url = conf.url + api;
+        url = uri + api;
 
     if (typeof arg === 'function') {
       fn = arg;
@@ -160,7 +160,10 @@ function Backend(conf) {
     if (debug) console.info("->", method, url, data);
 
     var fd = data ? new FormData(data) : undefined;
-    NProgress.start();
+    //start nprogress
+    if (window.NProgress) {
+      NProgress.start();
+    }
     //add secret token
     var xhr = new XMLHttpRequest();
     xhr.onload = function (e) {
@@ -174,7 +177,10 @@ function Backend(conf) {
       promise.always(r);
       promise[xhr.status == 200 ? 'done' : 'fail'](r);
       if (debug) console.info("<-", r);
-      NProgress.done();
+      //start nprogress
+      if (window.NProgress) {
+        NProgress.done();
+      }
     };
 
     xhr.onerror = function(e) {
@@ -183,7 +189,7 @@ function Backend(conf) {
     };
 
     fnProgress = fnProgress || function(e) {
-      if (e.lengthComputable) {
+      if (window.NProgress && e.lengthComputable) {
         NProgress.set(e.loaded / e.total);
       }
     };
@@ -196,8 +202,8 @@ function Backend(conf) {
 
     return promise;
   };
-
 }
+
 
 
 function CrudApi(path, backend, external) {
@@ -245,6 +251,7 @@ function CrudApi(path, backend, external) {
   });
 
 }
+
 
 
 // The ability to split your single-page application (SPA) into loosely-coupled module
@@ -298,7 +305,9 @@ app(function(api) {
       $error = $('#login-error');
 
   $('#form-login').on('submit', function(e) {
+    
     e.preventDefault();
+    
     m.login(this).done(function(r) {
       if (r.id) { 
         $login.addClass('hide');
@@ -326,15 +335,10 @@ app(function(api) {
       api.load(path);
       return;
     }
-
     //if logged go to home
     if (api.me && api.me.id) {
       var action = "index";
-      if (api.home[action]) {
-        api.home[action]();
-      } else {
-        api.home.trigger(action);
-      }
+      return api.home[action] ? api.home[action]() : api.home.trigger(action);
     }
   });
 
@@ -351,10 +355,10 @@ app(function(api) {
 
 });
 
+
 app(function(api) {
-  api.root.on('click tap', api.filter, function(e) {
-    e.preventDefault();
-    var href = this.getAttribute('href') || this.getAttribute('data-href');
+  api.root.on('click tap', api.route_filter, function(e) {
+    var href = this.getAttribute('data-href') || this.getAttribute('href');
     if (href) {
       riot.route(href);
     }
@@ -376,6 +380,7 @@ app(function(api) {
   });
 
 }); 
+
 
 
 var util = {

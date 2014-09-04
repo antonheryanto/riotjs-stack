@@ -9,7 +9,6 @@ function App(conf) {
   self.debug = conf.debug;
   self.backend = new Backend(conf);
 
-  /* user/{action} user/{id}/{action} ?q=*/
   self.load = function(path, fn) {
     
     if (!path) {
@@ -37,6 +36,7 @@ function App(conf) {
 
     self.trigger("before:load", path);
     self.one("load", fn);
+
     // route handler
     // check query string
     if (qs) {
@@ -52,7 +52,7 @@ function App(conf) {
       action = uri[2] || 'details';
     } 
 
-    module[action] ? module[action](arg) : module.trigger(action, arg);
+    return module[action] ? module[action](arg) : module.trigger(action, arg);
   };
 
   self.auth = new Auth(self.backend);

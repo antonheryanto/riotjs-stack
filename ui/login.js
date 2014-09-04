@@ -6,7 +6,9 @@ app(function(api) {
       $error = $('#login-error');
 
   $('#form-login').on('submit', function(e) {
+    
     e.preventDefault();
+    
     m.login(this).done(function(r) {
       if (r.id) { 
         $login.addClass('hide');
@@ -34,15 +36,10 @@ app(function(api) {
       api.load(path);
       return;
     }
-
     //if logged go to home
     if (api.me && api.me.id) {
       var action = "index";
-      if (api.home[action]) {
-        api.home[action]();
-      } else {
-        api.home.trigger(action);
-      }
+      return api.home[action] ? api.home[action]() : api.home.trigger(action);
     }
   });
 
@@ -58,3 +55,4 @@ app(function(api) {
   });
 
 });
+

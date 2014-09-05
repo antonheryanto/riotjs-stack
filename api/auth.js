@@ -12,7 +12,10 @@ function Auth(backend) {
     self.one('login', fn);
 
     return backend.call('auth', {}, m, function(r) {
-      if (!r || !r.id) return;
+      if (!r || !r.id) {
+        self.trigger('login:error', r);
+        return;
+      }
       item = r;
       self.trigger('login',r);
     });

@@ -1,34 +1,18 @@
-
+//common login process
 app(function(api) {
 
-  var m = api.auth,
-      $login = $('#login'),
-      $error = $('#login-error');
-
-  $('#form-login').on('submit', function(e) {
-    
+  api.login_form.on('submit', function(e) {
     e.preventDefault();
-    
-    m.login(this).done(function(r) {
-      if (r.id) { 
-        $login.addClass('hide');
-        return;
-      }
-      console.warn("login failed", r);
-      $error.html(r.warning || r.error);
-
-    }).fail(function(r) {
-      console.info("login failed", r.message);
-      $error.html(r.message);
-    });
-
+    api.auth.login(this);
   });
 
-  m.on('login', function(r) {
-    $login.addClass('hide');
-    api.main.removeClass('hide');
-    api.me = api.auth.current();
+  api.auth.on('login', function(r) {
+    if (api.login) {
+      api.login.addClass('hide');
+    }
 
+    api.me = api.auth.current();
+    api.auth.trigger('before:login', api.me);
     //check route redirect
     var hash = location.hash;
     var path = hash.slice(3);
@@ -37,21 +21,15 @@ app(function(api) {
       return;
     }
     //if logged go to home
-    if (api.me && api.me.id) {
+    if (api.me && api.me.id && api.home) {
       var action = "index";
       return api.home[action] ? api.home[action]() : api.home.trigger(action);
     }
-  });
+  }).on('logout', function() {
+    if (api.login) {
+      api.login.removeClass('hide');
+    }
 
-  m.on('logout', function(r) {
-    location.hash = '!/';
-    $login.removeClass('hide');
-    api.main.addClass('hide');
-  });
-
-  $('body').on('click', '#logout', function(e) {
-    e.preventDefault();
-    m.logout();
   });
 
 });

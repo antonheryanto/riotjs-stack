@@ -13,14 +13,18 @@ function CrudApi(path, backend, external) {
     self.trigger('edit', {}, arg);
   };
 
-  ['edit','details'].map(function(name) {
+  var get = ['edit','details'];
+  var getFn = function(name) {
     self[name] = function(arg, fn) {
       self.one(name, fn);
       return backend.call(path, arg, function(r) {
         self.trigger(name, r, arg);
       });
     };
-  });
+  };
+  for (var i = 1; i < get.length; i++) {
+    getFn(get[i]);
+  }
 
   self.save = function(m, args, fn, fnProgress) {
     args = args || {};

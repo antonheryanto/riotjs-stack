@@ -5,7 +5,8 @@ function App(conf) {
   var self = riot.observable(this),
       init = conf.init || 'auth';
   self.route_filter = conf.route_filter || '[href^="#!/"]';
-  self.root = conf.root || $('body');
+  self.login = conf.login || $('#login');
+  self.login_form = conf.login_form || $('#form-login');
   self.debug = conf.debug;
   self.backend = new Backend(conf);
 

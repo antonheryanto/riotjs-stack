@@ -16,9 +16,3 @@ add this to index.html:
 <script src="node_modules/riotjs/riot-stack.js"></script>
 <script>app({debug:true})</script>
 ```
-
-Target
-======
-bundle core api in riot-stack.js
-add optional library on demand
-seemless usage with dictated how user should uses the framework

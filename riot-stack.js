@@ -325,18 +325,19 @@ function CrudApi(path, backend, external) {
     self.trigger('edit', {}, arg);
   };
 
-  var get = ['edit','details'];
-  var getFn = function(name) {
-    self[name] = function(arg, fn) {
-      self.one(name, fn);
-      return backend.call(path, arg, function(r) {
-        self.trigger(name, r, arg);
-      });
-    };
+  self.edit = function(arg, fn) {
+    self.one('edit', fn);
+    return backend.call(path, arg, function(r) {
+      self.trigger('edit', r, arg);
+    });
   };
-  for (var i = 1; i < get.length; i++) {
-    getFn(get[i]);
-  }
+
+  self.details = function(arg, fn) {
+    self.one('details', fn);
+    return backend.call(path, arg, function(r) {
+      self.trigger('details', r, arg);
+    });
+  };
 
   self.save = function(m, args, fn, fnProgress) {
     args = args || {};

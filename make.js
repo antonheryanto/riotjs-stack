@@ -2,11 +2,11 @@
 require('shelljs/make');
 
 target.jquery = function() {
-  cat('api/*.js','ui/*.js').to('riot-stack.jquery.js');
+  cat('lib/*.js').to('riot-stack.jquery.js');
 };
 
 target.min = function() {
-  cat('ext/dom.js','api/*.js', 'ui/*.js').to('riot-stack.js');
+  cat('ext/dom.js','lib/*.js').to('riot-stack.js');
 };
 
 target.all = function() {

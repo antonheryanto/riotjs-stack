@@ -104,16 +104,16 @@ function App(conf) {
   
   var self = riot.observable(this),
       init = conf.init || 'auth';
-  self.route_filter = conf.route_filter || '[href^="#!/"]';
-  self.login = conf.login || $('#login');
-  self.login_form = conf.login_form || $('#form-login');
+  self.conf = conf;
+  self.home_module = conf.home_module || 'home';
   self.debug = conf.debug;
   self.backend = new Backend(conf);
+  self.auth = new Auth(self.backend);
 
   self.load = function(path, fn) {
     
     if (!path) {
-      return;
+      path = self.home_module;
     }
     var raw = path.split('?');
     var uri = raw[0].split('/');
@@ -125,10 +125,12 @@ function App(conf) {
     
     if (!module) {
       if (!qs) {
-        console.warn('module: ', uri[0], ' is not found');
+        if (self.debug) {
+          console.warn('module: ', uri[0], ' is not found');
+        }
         return;
       }
-      module = self.home;
+      module = self[self.home_module];
     }
 
     if (self.debug) {
@@ -153,22 +155,51 @@ function App(conf) {
       action = uri[2] || 'details';
     } 
 
+    if (module[action] && !module[action].IS_PUBLIC && !self.auth.current()) {
+      return;
+    }
+
     return module[action] ? module[action](arg) : module.trigger(action, arg);
   };
 
-  self.auth = new Auth(self.backend);
-  
   // initialization
   self.backend.call(init).always(function(data) {
+    if (self.debug) {
+      console.log('application ready');
+    }
     self.trigger("ready");
-    self.auth.validate(data);
+    //defined function when ready
   
   }).done(function(data) {
-    self.trigger('init', data);
+    if (self.debug) {
+      console.log('data ready and init');
+    }
+    //check user logged, if not procced route
+    if (!self.auth.validate(data)) {
+      //load module based on current hash
+      self.route(location.hash);
+    }
 
   }).fail(function(error) {
     console.log("fail", error);
     // failed because
+  });
+
+  self.route = function(hash) {
+    var path = hash.slice(3);
+
+    if (hash.substr(0,3) === '#!/' && path) {
+      self.load(path);
+      return;
+    }
+    //if logged go to home
+    self.load();
+
+  };
+
+  self.auth.on('login', function(me) {
+    self.trigger('before:login', me);
+    self.route(location.hash);
   });
 
 }
@@ -180,11 +211,14 @@ function Auth(backend) {
       item = null;
 
   self.current = function() {
+    if (!item) {
+      self.trigger('logout');
+      return false;
+    }
     return item;
   };
 
   self.login = function(m, fn) {
-    
     self.one('login', fn);
 
     return backend.call('auth', {}, m, function(r) {
@@ -193,12 +227,11 @@ function Auth(backend) {
         return;
       }
       item = r;
-      self.trigger('login',r);
+      self.trigger('login', r);
     });
   };
 
   self.logout = function(fn) {
-
     self.one('logout', fn);
 
     return backend.call('auth/logout', function(r) {
@@ -208,16 +241,15 @@ function Auth(backend) {
   };
 
   self.validate = function(r, fn) {
-    
     self.one('validate', fn);
-
-    item = r || item;
-    var e = item && item.id ? 'login' : 'logout';
-    self.trigger(e, item);
+    
+    item = r && r.id ? r : item;
+    if (item) {
+      return self.trigger('login', item);
+    }
   };
   
   self.save = function(m, fn) {
-    
     self.one('save', fn);
     
     return backend.call(url, {}, m, function(r) {
@@ -276,6 +308,7 @@ function Backend(conf) {
         r = JSON.parse(this.response);
       } catch(ex) {
         console.warn(ex);
+        promise.fail(r);
       }
 
       promise.always(r);
@@ -405,45 +438,9 @@ function Promise (fn) {
 }
 
 
-//common login process
 app(function(api) {
-
-  api.login_form.on('submit', function(e) {
-    e.preventDefault();
-    api.auth.login(this);
-  });
-
-  api.auth.on('login', function(r) {
-    if (api.login) {
-      api.login.addClass('hide');
-    }
-
-    api.me = api.auth.current();
-    api.auth.trigger('before:login', api.me);
-    //check route redirect
-    var hash = location.hash;
-    var path = hash.slice(3);
-    if (hash.substr(0,3) === '#!/' && path) {
-      api.load(path);
-      return;
-    }
-    //if logged go to home
-    if (api.me && api.me.id && api.home) {
-      var action = "index";
-      return api.home[action] ? api.home[action]() : api.home.trigger(action);
-    }
-  }).on('logout', function() {
-    if (api.login) {
-      api.login.removeClass('hide');
-    }
-
-  });
-
-});
-
-
-app(function(api) {
-  $('body').on('click tap', api.route_filter, function(e) {
+  var route_filter = api.conf.route_filter || '[href^="#!/"]';
+  $('body').on('click tap', route_filter, function(e) {
     var href = this.getAttribute('data-href') || this.getAttribute('href');
     if (href) {
       riot.route(href);
@@ -456,31 +453,8 @@ app(function(api) {
   });
 
   riot.route(function(hash) {
-    if(hash && hash.substr(0,3) !== '#!/') {
-      return;
-    }
-    
-    var path = hash.slice(3);
-    if (!path) {
-      api.auth.trigger('login', {});
-      return;
-    }
-    api.load(path);
-
+    api.route(hash);
   });
 
 }); 
 
-
-var util = {
-  option: function(data, selected, template) {
-    var list = JSON.parse(JSON.stringify(data));
-    return list.map(function(v) {
-      if (v.id == selected) {
-        v.selected = "selected";
-      }
-      return riot.render(template || 
-        '<option value="{id}" {selected}>{name}</option>', v);
-    }).join('');
-  }
-};

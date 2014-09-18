@@ -155,7 +155,7 @@ function App(conf) {
       action = uri[2] || 'details';
     } 
 
-    if (module[action] && !module[action].IS_PUBLIC && !self.auth.current()) {
+    if (module[action] && !module.IS_PUBLIC && !self.auth.authorized()) {
       return;
     }
 
@@ -211,6 +211,10 @@ function Auth(backend) {
       item = null;
 
   self.current = function() {
+    return item;
+  };
+
+  self.authorized = function() {
     if (!item) {
       self.trigger('logout');
       return false;

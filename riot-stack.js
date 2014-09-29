@@ -133,10 +133,6 @@ function App(conf) {
       module = self[self.home_module];
     }
 
-    if (self.debug) {
-      console.info("app load", uri);
-    }
-
     self.trigger("before:load", path);
     self.one("load", fn);
 
@@ -154,6 +150,10 @@ function App(conf) {
       arg.id = id;
       action = uri[2] || 'details';
     } 
+
+    if (self.debug) {
+      console.info("app load module:", uri, 'arg: ', arg, module.IS_PUBLIC ? "public" : "need login");
+    }
 
     if (module[action] && !module.IS_PUBLIC && !self.auth.authorized()) {
       return;
@@ -198,7 +198,7 @@ function App(conf) {
   };
 
   self.auth.on('login', function(me) {
-    self.trigger('before:login', me);
+    self.auth.trigger('before:login', me);
     self.route(location.hash);
   });
 
@@ -226,12 +226,11 @@ function Auth(backend) {
     self.one('login', fn);
 
     return backend.call('auth', {}, m, function(r) {
-      if (!r || !r.id) {
-        self.trigger('login:error', r);
-        return;
+      if (r && r.id) {
+        item = r;
+        return self.trigger('login', r);
       }
-      item = r;
-      self.trigger('login', r);
+      return self.trigger('login:error', r);
     });
   };
 
@@ -249,6 +248,7 @@ function Auth(backend) {
     
     item = r && r.id ? r : item;
     if (item) {
+      console.log('validate as logged', item);
       return self.trigger('login', item);
     }
   };
@@ -307,6 +307,10 @@ function Backend(conf) {
     //add secret token
     var xhr = new XMLHttpRequest();
     xhr.onload = function (e) {
+      if (window.NProgress) {
+        NProgress.done();
+      }
+
       var r = null;
       try {
         r = JSON.parse(this.response);
@@ -319,9 +323,7 @@ function Backend(conf) {
       promise[xhr.status == 200 ? 'done' : 'fail'](r);
       if (debug) console.info("<-", r);
       //start nprogress
-      if (window.NProgress) {
-        NProgress.done();
-      }
+      
     };
 
     xhr.onerror = function(e) {
@@ -381,7 +383,7 @@ function CrudApi(path, backend, external) {
     self.one('save', fn);
     
     return backend.call(path, args, m, function(r) {
-      if (!r && !external) {
+      if (!r.errors && !external) {
         self.trigger('save');
       }
     }, fnProgress);

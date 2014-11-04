@@ -107,7 +107,7 @@ function App(conf) {
   self.conf = conf;
   self.home_module = conf.home_module || 'home';
   self.debug = conf.debug;
-  self.backend = new Backend(conf);
+  self.backend = new Backend(self);
   self.auth = new Auth(self.backend);
 
   self.load = function(path, fn) {
@@ -181,7 +181,7 @@ function App(conf) {
     }
 
   }).fail(function(error) {
-    console.log("fail", error);
+    console.warn("fail", error);
     // failed because
   });
 
@@ -248,7 +248,6 @@ function Auth(backend) {
     
     item = r && r.id ? r : item;
     if (item) {
-      console.log('validate as logged', item);
       return self.trigger('login', item);
     }
   };
@@ -265,11 +264,11 @@ function Auth(backend) {
 
 
 // Fake backend to simulate a real thing
-function Backend(conf) {
+function Backend(app) {
 
   var self = this,
-    debug = conf.debug && typeof console != 'undefined';
-    uri = conf.uri || '/';
+    debug = app.conf.debug && typeof console != 'undefined';
+    uri = app.conf.uri || '/';
   
   // underlying implementation for `call` can change
   self.call = function(api, arg, data, fn, fnProgress) {
@@ -321,6 +320,7 @@ function Backend(conf) {
 
       promise.always(r);
       promise[xhr.status == 200 ? 'done' : 'fail'](r);
+      if (xhr.status != 200) app.trigger('error', { status: xhr.status, data: r });      
       if (debug) console.info("<-", r);
       //start nprogress
       

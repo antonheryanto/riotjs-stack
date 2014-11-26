@@ -13,6 +13,6 @@ npm/bower install riotjs-stack
 add this to index.html:
 ```html
 <script src="node_modules/riot/riot.js"></script>
-<script src="node_modules/riotjs/riot-stack.js"></script>
+<script src="node_modules/riotjs-stack/riot-stack.js"></script>
 <script>app({debug:true})</script>
 ```

@@ -194,17 +194,29 @@ function Backend(app) {
       }
       url += '?' + parts.join("&");
     }
-    var method = data ? 'POST' : 'GET';
+
+    var xhr = new XMLHttpRequest(),
+        method = data ? 'POST' : 'GET',
+        fd;
+
+    xhr.open(method, url, true);
+    
+    if (data) {
+      if (data instanceof HTMLElement) {
+        fd = new FormData(data);
+      } else {
+        fd = JSON.stringify(data);
+        xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+      }
+    } 
     // debug message
     if (debug) console.info("->", method, url, data);
 
-    var fd = data ? new FormData(data) : undefined;
     //start nprogress
     if (window.NProgress) {
       NProgress.start();
     }
     //add secret token
-    var xhr = new XMLHttpRequest();
     xhr.onload = function (e) {
       if (window.NProgress) {
         NProgress.done();
@@ -238,7 +250,6 @@ function Backend(app) {
     };
     xhr.addEventListener("progress", fnProgress);
     xhr.upload.onprogress = fnProgress;
-    xhr.open(method, url);
     xhr.send(fd);
     // given callback
     promise.done(fn);

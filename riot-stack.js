@@ -323,39 +323,30 @@ function Backend(app) {
       NProgress.start();
     }
     //add secret token
-    xhr.addEventListener('onload', function (e) {
+    xhr.addEventListener('load', function (e) {
       if (window.NProgress) {
         NProgress.done();
       }
 
-      var r = null;
-      try {
-        r = JSON.parse(this.response);
-      } catch(ex) {
-        console.warn(ex);
-        promise.fail(r);
-      }
-
+      var r = this.response;
       promise.always(r);
       promise[xhr.status == 200 ? 'done' : 'fail'](r);
       if (xhr.status != 200) app.trigger('error', { status: xhr.status, data: r });      
       if (debug) console.info("<-", r);
-      //start nprogress
-      
     });
 
-    xhr.onerror = function(e) {
+    xhr.addEventListener('error', function(e) {
       console.warn("error occur", this);
       promise.fail({ message: "offline or connection refuse" });
-    };
+    });
 
     fnProgress = fnProgress || function(e) {
       if (window.NProgress && e.lengthComputable) {
         NProgress.set(e.loaded / e.total);
       }
     };
-    xhr.addEventListener("progress", fnProgress);
-    xhr.upload.onprogress = fnProgress;
+    xhr.addEventListener('progress', fnProgress);
+    xhr.upload.addEventListener('progress', fnProgress);
     xhr.send(fd);
     // given callback
     promise.done(fn);

@@ -2,7 +2,7 @@
   "name": "riotjs-stack",
   "title": "RiotJS Stack",
   "description": "RiotJS Application Stack loosely based on riotjs admin",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "main": "dist/riot-stack.js",
   "homepage": "http://riotjs-stack.github.com",
   "author": {

@@ -2,7 +2,7 @@
   "name": "riotjs-stack",
   "title": "RiotJS Stack",
   "description": "RiotJS Application Stack loosely based on riotjs admin",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "main": "dist/riot-stack.js",
   "homepage": "http://riotjs-stack.github.com",
   "author": {
@@ -16,7 +16,7 @@
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://github.com/jquery/jquery/blob/2.1.1/MIT-LICENSE.txt"
+      "url": "https://github.com/antonheryanto/riotjs-stack/blob/master/LICENSE"
     }
   ],
   "devDependencies": {

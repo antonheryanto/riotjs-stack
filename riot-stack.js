@@ -110,6 +110,11 @@ function App(conf) {
   self.backend = new Backend(self);
   self.auth = new Auth(self.backend);
 
+  self.view = function(view, data) {
+    template = templates[view] || view;
+    return data ? riot.render(template, data) : template;
+  };
+
   self.load = function(path, fn) {
     
     if (!path) {
@@ -300,6 +305,7 @@ function Backend(app) {
         fd;
 
     xhr.open(method, url, true);
+    xhr.responseType = 'json';
     
     if (data) {
       if (data instanceof HTMLElement) {
@@ -317,7 +323,7 @@ function Backend(app) {
       NProgress.start();
     }
     //add secret token
-    xhr.onload = function (e) {
+    xhr.addEventListener('onload', function (e) {
       if (window.NProgress) {
         NProgress.done();
       }
@@ -336,7 +342,7 @@ function Backend(app) {
       if (debug) console.info("<-", r);
       //start nprogress
       
-    };
+    });
 
     xhr.onerror = function(e) {
       console.warn("error occur", this);

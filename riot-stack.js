@@ -275,9 +275,22 @@ function Backend(app) {
     debug = app.conf.debug && typeof console != 'undefined';
     uri = app.conf.uri || '/';
   
+  self.get = function(path, arg) {
+    return self.call(path, arg);
+  };
+
+  self.post = function(path, data) {
+    return self.call(path, null, data, null, 'POST');
+  };
+
+  self.put = self.post;
+
+  self.delete = function(path, arg) {
+    return self.call(path, arg, null, null, 'DELETE');
+  };
+
   // underlying implementation for `call` can change
-  self.call = function(api, arg, data, fn, fnProgress) {
-    
+  self.call = function(api, arg, data, fn, method, fnProgress) {
     var promise = new Promise(fn),
         url = uri + api;
 
@@ -301,8 +314,11 @@ function Backend(app) {
     }
 
     var xhr = new XMLHttpRequest(),
-        method = data ? 'POST' : 'GET',
         fd;
+
+    if (!method) {
+      method = data ? 'POST' : 'GET';
+    }
 
     xhr.open(method, url, true);
     xhr.responseType = 'json';
